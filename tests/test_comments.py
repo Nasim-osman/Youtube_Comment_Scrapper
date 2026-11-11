@@ -1,4 +1,5 @@
 import unittest
+import zipfile
 
 import openpyxl
 
@@ -155,6 +156,15 @@ class WorkbookTests(unittest.TestCase):
             [cell.value for cell in workbook.active[1]],
             ["Type", "Author", "Comment", "Replying_To", "Likes", "Published_At"],
         )
+
+    def test_workbook_is_a_single_zip_archive_starting_at_byte_zero(self):
+        _, workbook_file = create_workbook([], "Video")
+        workbook_file.seek(0)
+        with zipfile.ZipFile(workbook_file) as archive:
+            self.assertEqual(
+                min(info.header_offset for info in archive.infolist()),
+                0,
+            )
 
     def test_extraction_uses_submitted_video_and_keeps_reply_order(self):
         youtube = FakeYoutube()

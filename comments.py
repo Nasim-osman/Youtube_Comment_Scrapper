@@ -234,9 +234,10 @@ def create_workbook(comments_data, title):
                 wrap_text=True, vertical="top", horizontal="left"
             )
 
-    workbook.save(workbook_file)
-    workbook_file.seek(0)
-    return filename, workbook_file
+    finalized_workbook = BytesIO()
+    workbook.save(finalized_workbook)
+    finalized_workbook.seek(0)
+    return filename, finalized_workbook
 
 
 def extract_video(youtube, url_or_id):
