@@ -51,7 +51,7 @@ def get_video_id(url_or_id):
     video_id = None
 
     if parsed.scheme not in {"http", "https"}:
-        raise ValueError("একটি বৈধ YouTube video URL দিন।")
+        raise ValueError("Enter a valid YouTube video URL.")
 
     if host in {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com"}:
         if parsed.path == "/watch":
@@ -66,14 +66,14 @@ def get_video_id(url_or_id):
             video_id = path_parts[0]
 
     if not video_id or not VIDEO_ID_PATTERN.fullmatch(video_id):
-        raise ValueError("একটি বৈধ YouTube video URL দিন।")
+        raise ValueError("Enter a valid YouTube video URL.")
     return video_id
 
 
 def create_youtube_client(api_key=None):
     api_key = api_key or os.environ.get("YOUTUBE_API_KEY")
     if not api_key:
-        raise RuntimeError("সার্ভারে YouTube API key সেট করা নেই।")
+        raise RuntimeError("The YouTube API key is not configured on the server.")
     return build("youtube", "v3", developerKey=api_key, cache_discovery=False)
 
 
@@ -81,7 +81,7 @@ def get_video_metadata(youtube, video_id):
     response = youtube.videos().list(part="snippet", id=video_id).execute()
     items = response.get("items", [])
     if not items:
-        raise ValueError("ভিডিওটি পাওয়া যায়নি বা অ্যাক্সেস করা যাচ্ছে না।")
+        raise ValueError("The video could not be found or accessed.")
 
     snippet = items[0].get("snippet", {})
     title = clean_text(snippet.get("title", "")) or video_id

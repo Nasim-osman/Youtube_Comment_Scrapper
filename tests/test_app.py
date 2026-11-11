@@ -57,7 +57,7 @@ class AppTests(unittest.TestCase):
         with patch("app.get_history", return_value=[]):
             response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("ভিডিও history", response.get_data(as_text=True))
+        self.assertIn("Video history", response.get_data(as_text=True))
 
     def test_extract_downloads_workbook_and_records_history(self):
         self._login()
@@ -109,7 +109,18 @@ class AppTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         with patch("app.get_history", return_value=[]):
             home = self.client.get("/")
-        self.assertIn("একটি YouTube video URL দিন।", home.get_data(as_text=True))
+        self.assertIn("Enter a YouTube video URL.", home.get_data(as_text=True))
+
+    def test_login_page_uses_professional_english_copy(self):
+        response = self.client.get("/login")
+        page = response.get_data(as_text=True)
+        self.assertIn('<html lang="en">', page)
+        self.assertIn(
+            "Welcome to Nasim's personal YouTube comment scraper site",
+            page,
+        )
+        self.assertIn("Enter your app password to access the comment extractor.", page)
+        self.assertIn(">Log In</button>", page)
 
 
 if __name__ == "__main__":

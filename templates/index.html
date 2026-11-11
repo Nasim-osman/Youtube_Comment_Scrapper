@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="bn">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>YouTube Comment Extractor</title>
     <style>
-      :root { color-scheme: light; font-family: "Segoe UI", sans-serif; color: #172033; background: #f3f6fb; }
+      :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f3f6fb; }
       * { box-sizing: border-box; }
       body { margin: 0; min-height: 100vh; }
       header { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(24px, calc((100% - 1040px) / 2)); background: #fff; border-bottom: 1px solid #e6ebf2; }
@@ -49,13 +49,13 @@
       <div class="brand"><span class="mark" aria-hidden="true">▶</span> YouTube Comment Extractor</div>
       <form method="post" action="{{ url_for('logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="logout" type="submit">লগআউট</button>
+        <button class="logout" type="submit">Log Out</button>
       </form>
     </header>
     <main>
       <section class="intro">
-        <h1>কমেন্ট এক্সপোর্ট করুন</h1>
-        <p>YouTube ভিডিওর লিংক দিন—সব পাওয়া যাওয়া comment ও reply আগের Excel format-এ download হবে।</p>
+        <h1>Export YouTube Comments</h1>
+        <p>Enter a YouTube video URL to download all available comments and replies in an Excel workbook.</p>
       </section>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -64,34 +64,34 @@
         {% endfor %}
       {% endwith %}
 
-      <section class="panel" aria-label="কমেন্ট এক্সপোর্ট">
+      <section class="panel" aria-label="Comment export">
         <form method="post" action="{{ url_for('extract') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <label for="video_url">YouTube video URL</label>
           <div class="input-row">
             <input id="video_url" name="video_url" type="url" placeholder="https://www.youtube.com/watch?v=..." required>
-            <button class="primary" type="submit">Excel download</button>
+            <button class="primary" type="submit">Download Excel</button>
           </div>
-          <p class="hint">ভিডিওর comments চালু থাকতে হবে। বড় ভিডিওতে সংগ্রহে কিছুটা সময় লাগতে পারে।</p>
+          <p class="hint">Comments must be enabled for the video. Large videos may take longer to process.</p>
         </form>
       </section>
 
       <div class="history-head">
-        <h2>ভিডিও history</h2>
-        <span class="count">{{ history|length }}টি ভিডিও</span>
+        <h2>Video history</h2>
+        <span class="count">{% if history|length == 1 %}1 video{% else %}{{ history|length }} videos{% endif %}</span>
       </div>
-      <section class="history-list" aria-label="আগে এক্সপোর্ট করা ভিডিও">
+      <section class="history-list" aria-label="Previously exported videos">
         {% for item in history %}
           <article class="history-item">
             {% if item.thumbnail_url %}
-              <img class="thumbnail" src="{{ item.thumbnail_url }}" alt="ভিডিও thumbnail" loading="lazy">
+              <img class="thumbnail" src="{{ item.thumbnail_url }}" alt="Video thumbnail" loading="lazy">
             {% else %}
-              <div class="thumbnail" role="img" aria-label="Thumbnail পাওয়া যায়নি"></div>
+              <div class="thumbnail" role="img" aria-label="Thumbnail unavailable"></div>
             {% endif %}
             <a class="video-url" href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer">{{ item.video_url }}</a>
           </article>
         {% else %}
-          <div class="empty">এখনো কোনো ভিডিও এক্সপোর্ট করা হয়নি।</div>
+          <div class="empty">No videos have been exported yet.</div>
         {% endfor %}
       </section>
     </main>

@@ -1,7 +1,7 @@
 # Professional English UI and Typography Design
 
 **Date:** 2026-11-11
-**Status:** Approved for spec review
+**Status:** Approved
 
 ## Goal
 
@@ -9,7 +9,7 @@ Give the login and extraction pages consistent professional English copy and upd
 
 ## User experience
 
-- The login page displays: “Welcome to Nasim’s personal YouTube comment scraper site.”
+- The login page displays: “Welcome to Nasim's personal YouTube comment scraper site.”
 - All app-authored, user-visible copy on the login and extraction pages is in professional English, including labels, buttons, hints, empty states, image alternatives, login feedback, and extraction/database errors.
 - Both pages declare English as their document language and use the same modern system sans-serif font stack.
 - Existing page layout, visual styling, and application behavior remain unchanged.

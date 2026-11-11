@@ -32,7 +32,7 @@ def _database_url():
 def _connect():
     database_url = current_app.config["DATABASE_URL"]
     if not database_url:
-        raise RuntimeError("সার্ভারে history database সেট করা নেই।")
+        raise RuntimeError("The history database is not configured on the server.")
     return psycopg.connect(database_url, row_factory=dict_row)
 
 
@@ -91,12 +91,12 @@ def _youtube_error_message(error):
         pass
 
     if reason == "commentsDisabled":
-        return "এই ভিডিওতে comments বন্ধ আছে।"
+        return "Comments are disabled for this video."
     if reason in {"quotaExceeded", "dailyLimitExceeded"}:
-        return "YouTube API quota শেষ হয়েছে; পরে আবার চেষ্টা করুন।"
+        return "The YouTube API quota has been exceeded. Please try again later."
     if message:
-        return f"YouTube API অনুরোধ ব্যর্থ হয়েছে: {message}"
-    return f"YouTube API অনুরোধ ব্যর্থ হয়েছে (HTTP {error.status_code})।"
+        return f"The YouTube API request failed: {message}"
+    return f"The YouTube API request failed (HTTP {error.status_code})."
 
 
 def create_app(config=None):
@@ -113,7 +113,7 @@ def create_app(config=None):
     if config:
         app.config.update(config)
     if not app.config["SECRET_KEY"]:
-        raise RuntimeError("SECRET_KEY environment variable সেট করুন।")
+        raise RuntimeError("Set the SECRET_KEY environment variable.")
 
     def csrf_token():
         if "csrf_token" not in session:
@@ -148,13 +148,13 @@ def create_app(config=None):
             submitted_password = request.form.get("password", "")
             if not configured_password:
                 current_app.logger.error("APP_PASSWORD is not configured.")
-                flash("সার্ভারে app password সেট করা নেই।", "error")
+                flash("The app password is not configured on the server.", "error")
                 return render_template("login.html"), 503
             if hmac.compare_digest(submitted_password, configured_password):
                 session.clear()
                 session["authenticated"] = True
                 return redirect(url_for("home"))
-            flash("পাসওয়ার্ডটি সঠিক নয়।", "error")
+            flash("The password is incorrect.", "error")
         return render_template("login.html")
 
     @app.post("/logout")
@@ -168,7 +168,7 @@ def create_app(config=None):
             history = get_history()
         except psycopg.Error:
             current_app.logger.exception("Could not load extraction history.")
-            flash("History database-এ সংযোগ করা যাচ্ছে না।", "error")
+            flash("Could not connect to the history database.", "error")
             return render_template("index.html", history=[]), 503
         except RuntimeError as error:
             flash(str(error), "error")
@@ -179,7 +179,7 @@ def create_app(config=None):
     def extract():
         video_url = request.form.get("video_url", "").strip()
         if not video_url:
-            flash("একটি YouTube video URL দিন।", "error")
+            flash("Enter a YouTube video URL.", "error")
             return redirect(url_for("home"))
 
         try:
@@ -198,7 +198,7 @@ def create_app(config=None):
         except psycopg.Error:
             current_app.logger.exception("Could not save extraction history.")
             flash(
-                "History database-এ সংরক্ষণ ব্যর্থ হয়েছে; Excel download তৈরি হয়নি।",
+                "Could not save to the history database. The Excel download was not created.",
                 "error",
             )
             return redirect(url_for("home"))
