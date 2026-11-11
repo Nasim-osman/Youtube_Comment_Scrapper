@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YouTube Comment Extractor</title>
+    <style>
+      :root { color-scheme: light; font-family: "Segoe UI", sans-serif; color: #172033; background: #f3f6fb; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; }
+      header { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(24px, calc((100% - 1040px) / 2)); background: #fff; border-bottom: 1px solid #e6ebf2; }
+      .brand { display: flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 700; }
+      .mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; color: #fff; background: #d93025; }
+      .logout { border: 0; background: transparent; color: #526179; font: inherit; cursor: pointer; }
+      main { width: min(100% - 32px, 920px); margin: 48px auto 80px; }
+      .intro { margin-bottom: 24px; }
+      h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 34px); letter-spacing: -.5px; }
+      .intro p { margin: 0; color: #667085; line-height: 1.65; }
+      .panel { padding: clamp(20px, 4vw, 30px); background: #fff; border: 1px solid #e4e9f1; border-radius: 18px; box-shadow: 0 12px 35px #17365d0a; }
+      label { display: block; margin-bottom: 9px; font-size: 14px; font-weight: 650; }
+      .input-row { display: flex; gap: 10px; }
+      input { flex: 1; min-width: 0; padding: 13px 14px; border: 1px solid #ccd4e0; border-radius: 10px; font: inherit; }
+      input:focus { border-color: #3478d4; outline: 3px solid #3478d420; }
+      button.primary { padding: 0 18px; border: 0; border-radius: 10px; color: #fff; background: #174ea6; font: inherit; font-weight: 650; cursor: pointer; }
+      button.primary:hover { background: #123f88; }
+      .hint { margin: 11px 0 0; color: #7a8495; font-size: 13px; }
+      .message { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; color: #9c2520; background: #fff1ef; font-size: 14px; }
+      .history-head { display: flex; align-items: baseline; justify-content: space-between; margin: 38px 0 14px; }
+      h2 { margin: 0; font-size: 20px; }
+      .count { color: #7a8495; font-size: 13px; }
+      .history-list { display: grid; gap: 12px; }
+      .history-item { display: flex; align-items: center; gap: 16px; padding: 13px; border: 1px solid #e4e9f1; border-radius: 14px; background: #fff; }
+      .thumbnail { width: 144px; aspect-ratio: 16 / 9; flex: 0 0 auto; object-fit: cover; border-radius: 9px; background: #e9edf4; }
+      .video-url { overflow-wrap: anywhere; color: #174ea6; font-size: 14px; line-height: 1.5; text-decoration: none; }
+      .video-url:hover { text-decoration: underline; }
+      .empty { padding: 25px 20px; border: 1px dashed #cbd4e1; border-radius: 13px; color: #758096; background: #fff; text-align: center; }
+      @media (max-width: 600px) {
+        header { padding: 0 18px; }
+        main { margin-top: 30px; }
+        .input-row { flex-direction: column; }
+        button.primary { min-height: 46px; }
+        .history-item { align-items: flex-start; gap: 12px; }
+        .thumbnail { width: 112px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">▶</span> YouTube Comment Extractor</div>
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="logout" type="submit">লগআউট</button>
+      </form>
+    </header>
+    <main>
+      <section class="intro">
+        <h1>কমেন্ট এক্সপোর্ট করুন</h1>
+        <p>YouTube ভিডিওর লিংক দিন—সব পাওয়া যাওয়া comment ও reply আগের Excel format-এ download হবে।</p>
+      </section>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="message" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <section class="panel" aria-label="কমেন্ট এক্সপোর্ট">
+        <form method="post" action="{{ url_for('extract') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="video_url">YouTube video URL</label>
+          <div class="input-row">
+            <input id="video_url" name="video_url" type="url" placeholder="https://www.youtube.com/watch?v=..." required>
+            <button class="primary" type="submit">Excel download</button>
+          </div>
+          <p class="hint">ভিডিওর comments চালু থাকতে হবে। বড় ভিডিওতে সংগ্রহে কিছুটা সময় লাগতে পারে।</p>
+        </form>
+      </section>
+
+      <div class="history-head">
+        <h2>ভিডিও history</h2>
+        <span class="count">{{ history|length }}টি ভিডিও</span>
+      </div>
+      <section class="history-list" aria-label="আগে এক্সপোর্ট করা ভিডিও">
+        {% for item in history %}
+          <article class="history-item">
+            {% if item.thumbnail_url %}
+              <img class="thumbnail" src="{{ item.thumbnail_url }}" alt="ভিডিও thumbnail" loading="lazy">
+            {% else %}
+              <div class="thumbnail" role="img" aria-label="Thumbnail পাওয়া যায়নি"></div>
+            {% endif %}
+            <a class="video-url" href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer">{{ item.video_url }}</a>
+          </article>
+        {% else %}
+          <div class="empty">এখনো কোনো ভিডিও এক্সপোর্ট করা হয়নি।</div>
+        {% endfor %}
+      </section>
+    </main>
+  </body>
+</html>
